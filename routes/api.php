@@ -2,6 +2,11 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\ShipmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +21,23 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::prefix('products')->group(function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('/{id}', [ProductController::class, 'show']);
+});
+
+Route::prefix('orders')->group(function () {
+    Route::post('/', [OrderController::class, 'store']);
+    Route::post('/{order}/payments', [PaymentController::class, 'store']);
+    Route::post('/{order}/shipments', [ShipmentController::class, 'store']);
+});
+
+Route::prefix('webhooks')->group(function () {
+    Route::post('/payment', [WebhookController::class, 'payment']);
+});
+
+Route::prefix('shipments')->group(function () {
+    Route::get('/{shipment}/tracking', [ShipmentController::class, 'tracking']);
 });
