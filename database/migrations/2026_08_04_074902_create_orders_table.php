@@ -23,16 +23,9 @@ return new class extends Migration
             $table->decimal('shipping_cost', 12, 2)->default(0);
             $table->decimal('grand_total', 12, 2);
             $table->string('currency', 10)->default('IDR');
-            $table->string('idempotency_key', 100)->unique();
             $table->text('notes')->nullable();
 
             $table->timestamps();
-
-            $table->index([
-                'status',
-                'payment_status',
-                'shipping_status'
-            ], 'orders_status_index');
         });
     }
 

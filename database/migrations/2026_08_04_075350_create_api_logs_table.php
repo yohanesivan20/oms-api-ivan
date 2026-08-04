@@ -19,7 +19,6 @@ return new class extends Migration
             $table->json('request')->nullable();
             $table->json('response')->nullable();
             $table->integer('status_code')->nullable();
-            $table->integer('duration_ms')->nullable();
             $table->boolean('is_success')->default(true);
             $table->text('error_message')->nullable();
             $table->timestamp('created_at')->useCurrent();
