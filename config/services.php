@@ -31,4 +31,17 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'dummyjson' => [
+        'url' => env('DUMMYJSON_URL'),
+    ],
+
+    'payment' => [
+        'url' => env('PAYMENT_URL'),
+        'api_key' => env('PAYMENT_API_KEY'),
+    ],
+
+    'shipment' => [
+        'url' => env('SHIPPING_URL'),
+        'api_key' => env('SHIPPING_API_KEY'),
+    ],
 ];
