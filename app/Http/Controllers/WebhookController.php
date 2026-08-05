@@ -31,7 +31,13 @@ class WebhookController extends Controller
                 $payment,
                 'Webhook processed.'
             );
-        } catch (ValidationException $e) {
+        } catch (\RuntimeException $e) {
+            return $this->error(
+                $e->getMessage(),
+                404
+            );
+        } 
+        catch (ValidationException $e) {
             return $this->error(
                 $e->getMessage(),
                 422

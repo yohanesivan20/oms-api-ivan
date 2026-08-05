@@ -33,6 +33,11 @@ class OrderController extends Controller
                 201
             );
 
+        } catch (\RuntimeException $e) {
+            return $this->error(
+                $e->getMessage(),
+                404
+            );
         } catch (Throwable $e) {
             return $this->error(
                 'Internal Server Error',

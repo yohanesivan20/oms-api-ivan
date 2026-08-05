@@ -32,10 +32,20 @@ class ShipmentController extends Controller
                 'Shipment created successfully.',
                 201
             );
-        }  catch (Throwable $e) {
+        } catch (\RuntimeException $e) {
+            return $this->error(
+                $e->getMessage(),
+                404
+            );
+        } catch (Throwable $e) {dd($e);
             return $this->error(
                 'Internal Server Error',
                 500
+            );
+        } catch (ValidationException $e) {
+            return $this->error(
+                $e->getMessage(),
+                422
             );
         }
     }
@@ -56,6 +66,11 @@ class ShipmentController extends Controller
             return $this->success(
                 $result,
                 'Destination retrieved successfully.'
+            );
+        } catch (\RuntimeException $e) {
+            return $this->error(
+                $e->getMessage(),
+                404
             );
         } catch (ValidationException $e) {
             return $this->error(
@@ -96,7 +111,23 @@ class ShipmentController extends Controller
                 $result['data'] ?? $result,
                 'Shipping cost calculated successfully.'
             );
+        } catch (\RuntimeException $e) {
+            return $this->error(
+                $e->getMessage(),
+                404
+            );
         } catch (ValidationException $e) {
+            return $this->error(
+                $e->getMessage(),
+                422
+            );
+        } catch (Throwable $e) {
+            return $this->error(
+                'Internal Server Error',
+                500
+            );
+        }
+        catch (ValidationException $e) {
             return $this->error(
                 $e->getMessage(),
                 422
