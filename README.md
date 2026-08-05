@@ -2,7 +2,7 @@
 
 Order Management System (OMS) API built with **Laravel 10** as part of a backend technical assessment.
 
-The application provides REST APIs for managing orders, payments, shipments, shipment tracking, queue processing, logging, and external API integrations.
+This application provides REST APIs for product retrieval, order management, payment processing, shipment management, shipment cost calculation, shipment tracking, queue processing, logging, and external API integration.
 
 ---
 
@@ -10,10 +10,11 @@ The application provides REST APIs for managing orders, payments, shipments, shi
 
 * Product API Integration (DummyJSON)
 * Create Order
-* Order Detail
 * Payment Integration
 * Payment Webhook
 * Shipment Integration (RajaOngkir)
+* Shipping Cost Calculation
+* Destination Search
 * Queue Processing
 * Email Notification
 * External API Logging
@@ -55,6 +56,23 @@ https://rajaongkir.com/
 
 ---
 
+# Project Structure
+
+```text
+app
+├── Clients
+├── Enums
+├── Helpers
+├── Http
+│   ├── Controllers
+│   └── Requests
+├── Jobs
+├── Mail
+├── Models
+├── Repositories
+├── Services
+```
+
 ---
 
 # Installation
@@ -69,7 +87,7 @@ cd oms-api
 
 ---
 
-## 2. Install Dependency
+## 2. Install Dependencies
 
 ```bash
 composer install
@@ -78,6 +96,8 @@ composer install
 ---
 
 ## 3. Copy Environment File
+
+Linux / Mac
 
 ```bash
 cp .env.example .env
@@ -114,14 +134,13 @@ DB_PASSWORD=
 
 ---
 
-## 6. Configure External API
+## 6. Configure External Services
 
 ```env
 DUMMYJSON_URL=https://dummyjson.com
 
-RAJAONGKIR_BASE_URL=https://rajaongkir.komerce.id/api/v1
-
-RAJAONGKIR_API_KEY=YOUR_API_KEY
+SHIPPING_URL=https://rajaongkir.komerce.id/api/v1
+SHIPPING_API_KEY=YOUR_RAJAONGKIR_API_KEY=your_api_key
 ```
 
 ---
@@ -132,13 +151,15 @@ RAJAONGKIR_API_KEY=YOUR_API_KEY
 QUEUE_CONNECTION=database
 ```
 
-Generate Queue Table
+Generate queue table
 
 ```bash
 php artisan queue:table
 ```
 
-Run Migration
+---
+
+## 8. Run Database Migration
 
 ```bash
 php artisan migrate
@@ -146,7 +167,7 @@ php artisan migrate
 
 ---
 
-## 8. Configure Mail
+## 9. Configure Mail
 
 Example using Log Driver
 
@@ -158,25 +179,37 @@ MAIL_FROM_NAME="OMS API"
 
 ---
 
-# Database Migration
-
-Run all migrations
+## 10. Clear Configuration Cache
 
 ```bash
-php artisan migrate
-```
+php artisan config:clear
 
-If you need fresh database
+php artisan cache:clear
 
-```bash
-php artisan migrate:fresh
+php artisan route:clear
+
+php artisan config:cache
 ```
 
 ---
 
-# Run Queue Worker
+## 11. Generate API Documentation
 
-Open another terminal
+```bash
+php artisan scramble:export
+```
+
+Documentation URL
+
+```
+http://localhost:8000/docs/api
+```
+
+---
+
+## 12. Start Queue Worker
+
+Open another terminal.
 
 ```bash
 php artisan queue:work
@@ -189,23 +222,7 @@ Queue is used for:
 
 ---
 
-# API Documentation
-
-Generate OpenAPI documentation
-
-```bash
-php artisan scramble:export
-```
-
-Open documentation
-
-```
-http://localhost:8000/docs/api
-```
-
----
-
-# Run Application
+## 13. Run Application
 
 ```bash
 php artisan serve
@@ -223,45 +240,117 @@ http://127.0.0.1:8000
 
 ## Products
 
-| Method | Endpoint           |
-| ------ | ------------------ |
-| GET    | /api/products      |
-| GET    | /api/products/{id} |
+| Method | Endpoint             |
+| ------ | -------------------- |
+| GET    | `/api/products`      |
+| GET    | `/api/products/{id}` |
 
 ---
 
 ## Orders
 
-| Method | Endpoint         |
-| ------ | ---------------- |
-| POST   | /api/orders      |
-| GET    | /api/orders/{id} |
+| Method | Endpoint      |
+| ------ | ------------- |
+| POST   | `/api/orders` |
 
 ---
 
 ## Payments
 
-| Method | Endpoint                     |
-| ------ | ---------------------------- |
-| POST   | /api/orders/{order}/payments |
-| POST   | /api/payments/webhook        |
+| Method | Endpoint                       |
+| ------ | ------------------------------ |
+| POST   | `/api/orders/{order}/payments` |
 
 ---
 
-## Shipment
+## Webhooks
 
-| Method | Endpoint                           |
-| ------ | ---------------------------------- |
-| GET    | /api/shipping/destination          |
-| POST   | /api/shipping/cost                 |
-| POST   | /api/orders/{order}/shipments      |
-| GET    | /api/shipments/{shipment}/tracking |
+| Method | Endpoint                |
+| ------ | ----------------------- |
+| POST   | `/api/webhooks/payment` |
 
 ---
 
-# Logging
+## Shipments
 
-All external API calls are logged into the `api_logs` table.
+| Method | Endpoint                             |
+| ------ | ------------------------------------ |
+| GET    | `/api/shipments/search-destinations` |
+| POST   | `/api/shipments/calculate-cost`      |
+| POST   | `/api/orders/{order}/shipments`      |
+
+---
+
+# Queue Flow
+
+```text
+Create Order
+      │
+      ▼
+Dispatch ProcessPaymentJob
+      │
+      ▼
+Dispatch SendOrderCreatedEmailJob
+      │
+      ▼
+Queue Worker
+      │
+      ├────────────► Create Payment
+      │
+      └────────────► Send Email
+```
+
+---
+
+# Order Flow
+
+```text
+Client
+   │
+   ▼
+Create Order
+   │
+   ▼
+Fetch Products
+   │
+   ▼
+Calculate Grand Total
+   │
+   ▼
+Store Order
+   │
+   ▼
+Store Order Items
+   │
+   ▼
+Dispatch Queue Jobs
+   │
+   ▼
+Return Response
+```
+
+---
+
+# Shipment Flow
+
+```text
+Search Destination
+        │
+        ▼
+Calculate Shipping Cost
+        │
+        ▼
+Create Shipment
+        │
+        ▼
+Store Shipment Data
+```
+
+---
+
+# Logging & Monitoring
+
+All external API calls are stored in the **api_logs** table.
 
 Logged information includes:
 
@@ -270,7 +359,8 @@ Logged information includes:
 * HTTP Method
 * Request Payload
 * Response Payload
-* Status Code
+* HTTP Status Code
+* Response Time
 * Success / Failed Status
 * Error Message
 
@@ -280,7 +370,7 @@ Logged information includes:
 
 Queue Driver
 
-```
+```text
 Database
 ```
 
@@ -295,11 +385,11 @@ Jobs
 
 The project can be tested using:
 
+* Scramble API Documentation
 * Postman Collection
-* Scramble Documentation
 
 ---
 
 # Author
 
-Ivan Danasuta
+**Ivan Danasuta**
