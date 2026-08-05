@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Throwable;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreOrderRequest;
 use App\Services\OrderService;
 use Dedoc\Scramble\Attributes\Group;
+use Illuminate\Validation\ValidationException;
 
 #[Group('Orders')]
 class OrderController extends Controller
@@ -31,11 +33,15 @@ class OrderController extends Controller
                 201
             );
 
-        } catch (\Throwable $e) {
-
+        } catch (Throwable $e) {
+            return $this->error(
+                'Internal Server Error',
+                500
+            );
+        } catch (ValidationException $e) {
             return $this->error(
                 $e->getMessage(),
-                400
+                422
             );
         }
     }

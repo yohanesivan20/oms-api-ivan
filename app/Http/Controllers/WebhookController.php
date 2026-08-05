@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PaymentWebhookRequest;
 use App\Services\PaymentService;
 
+use Throwable;
 use Illuminate\Http\Request;
 use Dedoc\Scramble\Attributes\Group;
+use Illuminate\Validation\ValidationException;
 
 #[Group('Webhook Payments')]
 class WebhookController extends Controller
@@ -29,12 +31,12 @@ class WebhookController extends Controller
                 $payment,
                 'Webhook processed.'
             );
-        } catch (\RuntimeException $e) {
+        } catch (ValidationException $e) {
             return $this->error(
                 $e->getMessage(),
-                404
+                422
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return $this->error(
                 'Internal Server Error',
                 500

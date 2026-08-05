@@ -85,4 +85,27 @@ class ShipmentService
             . now()->format('ymdHis')
             . random_int(1000, 9999);
     }
+
+    public function searchDestination(
+        string $keyword,
+        int $limit = 10
+    ): array {
+
+        $response = $this->shipmentClient->searchDestination(
+            $keyword,
+            $limit
+        );
+
+        return $response;
+    }
+
+    public function calculateCost(array $payload): array
+    {
+        return $this->shipmentClient->calculateCost([
+            'origin' => $payload['origin'],
+            'destination' => $payload['destination'],
+            'weight' => $payload['weight'],
+            'courier' => $payload['courier'],
+        ]);
+    }
 }

@@ -39,5 +39,6 @@ Route::prefix('webhooks')->group(function () {
 });
 
 Route::prefix('shipments')->group(function () {
-    Route::get('/{shipment}/tracking', [ShipmentController::class, 'tracking']);
+    Route::get('/search-destinations', [ShipmentController::class,'searchDestination']);
+    Route::post('/calculate-cost', [ShipmentController::class,'calculateCost']);
 });
